@@ -1,0 +1,45 @@
+#!/bin/bash
+
+microToSecond() {
+  if (( $# < 1 )) || ! [[ "$1" =~ ^[0-9]*$ ]]
+  then
+	echo "call to microToSeconds needs a number argument"
+	exit 1
+  fi
+  if (( ${#1} < 7 ))
+  then
+	echo \
+	  $(sed -Ee 's/./0/g' -e 's/^(.)/\1./' <<< \
+		  $(seq -s '' 0 $((6 - ${#1}))) \
+	  )$1
+  else
+	sed -E "s/^(.{$((${#1} - 6))})/\\1./" <<< $1
+  fi
+}
+
+timestamp=$(gdate +%s%6N)
+
+while read newNumber
+do 
+  if ! [[ "$newNumber" =~ ^[0-9]*$ ]]
+  then
+	echo "input wasn't a number"
+  fi
+  if (( $number < 1 ))
+  then
+	exit 0
+  fi
+  if [ -z ${initial+x} ]
+  then
+	inital=$newNumber
+  fi
+  timepassed=$(($(gdate +%s%6N) - $timestamp))
+  
+  if (( newNumber != number ))
+  then
+	number=$newNumber
+	soFar=$(bc -l <<< "( $initial - $number )")
+	timeLeft=$(bc -l <<< "( $initial - $number ) / $(microToSecond $timepassed) * $number")
+	printf "so far: $soFar\tamount left: $number\ttime passed: $(microToSecond $timepassed)s\ttime left: %.*fs\n" 6 $timeLeft
+  fi
+done
